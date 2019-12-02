@@ -6,6 +6,9 @@ This tool extracts useful information from Unity asset bundles and stores the in
 
 **Newly packagized**
 
+Add this to your Packages/manifest.json to include it in a project:
+"com.unity.asset-bundle-analyzer": "https://git@github.com/sbeck3d/com.unity.asset-bundle-analyzer.git"
+
 To install this package, follow the instructions in the [Package Manager documentation](https://docs.unity3d.com/Manual/upm-ui.html).
 
 This package runs a python script via command line.

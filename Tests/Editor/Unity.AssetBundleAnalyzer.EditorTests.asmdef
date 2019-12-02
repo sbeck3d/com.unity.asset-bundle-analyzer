@@ -1,8 +1,7 @@
 {
     "name": "Unity.AssetBundleAnalyzer.EditorTests",
     "references": [
-        "Unity.AssetBundleAnalyzer.Editor",
-        "Unity.AssetBundleAnalyzer"
+        "Unity.AssetBundleAnalyzer.Editor"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

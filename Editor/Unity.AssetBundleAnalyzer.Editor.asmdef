@@ -1,7 +1,6 @@
 {
     "name": "Unity.AssetBundleAnalyzer.Editor",
     "references": [
-      "Unity.AssetBundleAnalyzer"
     ],
     "includePlatforms": [
         "Editor"

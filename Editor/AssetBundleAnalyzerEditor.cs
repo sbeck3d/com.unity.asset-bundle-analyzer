@@ -1,6 +1,6 @@
 using UnityEngine;
 
-namespace UnityEditor.Support.AssetBundleAnalyzer
+namespace UnityEditor.AssetBundleAnalyzer
 {
     /// <summary>
     /// 

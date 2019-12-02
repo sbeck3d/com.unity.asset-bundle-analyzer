@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using UnityEngine;
 
-namespace UnityEditor.Support.AssetBundleAnalyzer
+namespace UnityEditor.AssetBundleAnalyzer
 {
     public class AnalyzeAssetBundleRequest
     {

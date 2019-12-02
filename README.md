@@ -58,7 +58,7 @@ Additional views are also provided:
 * **view_suspicious_audio_clips**: list all clips that are streamed and should not, or the opposite
 
 ### Screenshots
-Access the via Window>Analysis>AssetBundle Analyzer
+Access via Window>Analysis>AssetBundle Analyzer  
 In Editor UI:  
 ![alt text](AssetBundleAnalyzerUI.png "Asset bundle analyzer menu")
 

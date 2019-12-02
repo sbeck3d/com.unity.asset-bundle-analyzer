@@ -1,0 +1,11 @@
+{
+    "name": "Unity.AssetBundleAnalyzer.Tests",
+    "references": [
+        "Unity.AssetBundleAnalyzer"
+    ],
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": []
+}

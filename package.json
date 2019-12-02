@@ -1,0 +1,9 @@
+{
+	"name": "com.unity.asset-bundle-analyzer",
+	"displayName":"com.unity.asset-bundle-analyzer",
+	"version": "0.1.0-preview",
+	"unity": "2019.3",
+	"description": "This tool extracts useful information from Unity asset bundles and stores the information in an SQLite database.",
+	"dependencies": {
+	}
+}

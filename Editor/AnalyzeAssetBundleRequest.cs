@@ -40,7 +40,7 @@ namespace UnityEditor.AssetBundleAnalyzer
                 }
                 else
                 {
-                    UnityEngine.Debug.Log("Success!");
+                    UnityEngine.Debug.Log("Folder scanned, no bundles found.");
                 }
             }
         }

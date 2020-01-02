@@ -1050,6 +1050,7 @@ class ShaderHandler(BaseHandler):
         cursor.execute('''
             INSERT INTO shaders(id, properties, sub_shaders, passes, sub_programs, unique_programs, keywords)
                 VALUES(?,?,?,?,?,?,?)
+        ''', (current_id, properties, len(sub_shaders), pass_num, total_subprograms, len(unique_progs),
               ", ".join(sorted(unique_keywords))))
 
         return (name,) + self._recursive_process(obj, "")

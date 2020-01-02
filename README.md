@@ -1,21 +1,25 @@
 # Asset Bundle Analyzer Package
 ## com.unity.support.asset-bundle-analyzer
+Version 0.1.0 [last updated 2020-01-02]
+ 
 This tool extracts useful information from Unity asset bundles and stores the information in an SQLite database.
 
 ## Getting started
 
-**Newly packagized**
+####Newly packagized
 
 Add this to your Packages/manifest.json to include it in a project:
+
 "com.unity.asset-bundle-analyzer": "https://git@github.com/sbeck3d/com.unity.asset-bundle-analyzer.git"
 
 To install this package, follow the instructions in the [Package Manager documentation](https://docs.unity3d.com/Manual/upm-ui.html).
 
-This package runs a python script via command line.
+The AssetBundle Analyzer runs a python script and saves a database file (.db) in the project folder.
 
-You need Python 2.7 accessible from path to run this program. You will also need a tool such as [DB Browser for SQLite](https://sqlitebrowser.org/) to open the database.
+~~You need Python 2.7~~ Now compatible with Python 3.7 accessible from path to run this program. You will also need a tool such as [DB Browser for SQLite](https://sqlitebrowser.org/) to open the database.
 
-## Optional arguments
+## Optional arguments 
+####[Currently not supported in 0.1.0 - coming soon]
 
 * -p PATTERN, --pattern PATTERN: wildcard pattern used to recursively find asset bundles in the specified folder (default: *)
 *  -o OUTPUT, --output OUTPUT: name of the output database file (default: database)
@@ -58,7 +62,9 @@ Additional views are also provided:
 * **view_suspicious_audio_clips**: list all clips that are streamed and should not, or the opposite
 
 ### Screenshots
+
 Access via Window>Analysis>AssetBundle Analyzer  
+
 In Editor UI:  
 ![alt text](AssetBundleAnalyzerUI.png "Asset bundle analyzer menu")
 

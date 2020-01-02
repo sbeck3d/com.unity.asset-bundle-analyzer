@@ -1,13 +1,12 @@
-import sys
+import argparse
+import collections
+import fnmatch
+import json
 import os
 import re
-import collections
-import json
-import sqlite3
 import shutil
-import argparse
+import sqlite3
 import subprocess
-import fnmatch
 import uuid
 from multiprocessing import Process
 
@@ -17,13 +16,16 @@ arg_parser.add_argument("path", help="path of the asset bundle folder")
 arg_parser.add_argument("-p", "--pattern", default="*", help="asset bundle search pattern")
 arg_parser.add_argument("-o", "--output", default="database.db", help="name of the output database file")
 arg_parser.add_argument("-k", "--keep-temp", help="keep extracted files in asset bundle folder", action='store_true')
-arg_parser.add_argument("-r", "--store-raw", help="store raw json object in 'raw_objects' database table", action='store_true')
-arg_parser.add_argument("-d", "--debug", help="enable pdb debugger to break when ctrl-c is pressed", action='store_true')
+arg_parser.add_argument("-r", "--store-raw", help="store raw json object in 'raw_objects' database table",
+                        action='store_true')
+arg_parser.add_argument("-d", "--debug", help="enable pdb debugger to break when ctrl-c is pressed",
+                        action='store_true')
 arg_parser.add_argument("-v", "--verbose", help="display verbose script logging", action='store_true')
 args = arg_parser.parse_args()
 
+
 def main():
-    if (args.debug == True):
+    if args.debug:
         import signal
         signal.signal(signal.SIGINT, debug_signal_handler)
 
@@ -71,7 +73,7 @@ def main():
                             # Parse and process file.
                             if ret_code == 0 and os.path.isfile(datafile + ".txt"):
                                 debug_print("Parsing " + f2, 3)
-                                p = Parser(file_index);
+                                p = Parser(file_index)
                                 objs = p.parse(datafile + ".txt")
                                 processor.process_objects(bundle_id, objs, db, f2, args.store_raw)
 
@@ -115,9 +117,8 @@ class Parser(object):
         }
         """
 
-        self._external_references = {}
+        self._external_references = {0: self._file_index.get_id(os.path.basename(filepath[:-4]))}
         # File id 0 is always the current file (we store only the base file name without .txt extension).
-        self._external_references[0] = self._file_index.get_id(os.path.basename(filepath[:-4]))
 
         with open(filepath) as f:
             line = f.readline()
@@ -128,21 +129,21 @@ class Parser(object):
                     if not line or line == '\n':
                         break
 
-                    m = re.match(r"path\((\d+)\)\: \".*/(.+?)\"", line)
+                    m = re.match(r"path\((\d+)\): \".*/(.+?)\"", line)
                     if not m:
                         raise Exception("Error in references")
                     else:
                         # Get the local file id <> global file id pair.
-                        file = m.group(2)
+                        local_file = m.group(2)
                         local_index = int(m.group(1))
-                        global_index = self._file_index.get_id(file)
+                        global_index = self._file_index.get_id(local_file)
                         self._external_references[local_index] = global_index
 
         with open(filepath) as f:
             data = f.read()
 
         # Parse the whole file, extract all objects.
-        regex = re.compile(r"ID: (\-?[a-f0-9]+) \(ClassID: (\d+)\) (\w+)([\s\S]*?(?=(\n{2,}ID:|$)))")
+        regex = re.compile(r"ID: (-?[a-f0-9]+) \(ClassID: (\d+)\) (\w+)([\s\S]*?(?=(\n{2,}ID:|$)))")
         matches = regex.findall(data)
 
         objects = {}
@@ -153,7 +154,7 @@ class Parser(object):
                 self._parse_lines(match[3])
                 objects[int(match[0])] = {"ClassID": int(match[1]), "Type": match[2], "Content": self._parse_obj()}
             except Exception as e:
-                print("Error in " + match[0])
+                print("Error in " + match[0] + str(e))
                 self._print_error()
                 raise
 
@@ -174,7 +175,7 @@ class Parser(object):
                 self._fields.append(field)
 
     def _print_error(self):
-        for i in xrange(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
+        for i in range(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
             print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
 
     def _parse_obj(self, level=1):
@@ -223,11 +224,12 @@ class Parser(object):
                                     break
                                 vector.extend(self._fields[self._index].value.split(" "))
 
-                            obj[field.name] = Field("pod_vector:" + item_field.type, map(lambda x: self._typecast(x, item_field.type), vector))
+                            obj[field.name] = Field("pod_vector:" + item_field.type,
+                                                    map(lambda x: self._typecast(x, item_field.type), vector))
 
                         else:
                             # Make sure that indentation level is one higher.
-                            if item_field.level != level+1:
+                            if item_field.level != level + 1:
                                 print (field)
                                 print (item_field)
                                 raise Exception("Error parsing array!")
@@ -239,13 +241,13 @@ class Parser(object):
                             # No value means a nested object (Case for "data (Type)" element).
                             if not item_field.value:
                                 # Iterate over array elements.
-                                for i in xrange(size):
+                                for i in range(size):
                                     item_field = self._fields[self._index]
                                     self._index += 1
 
                                     # Special case for PPtrs.
                                     if item_field.type[:5] == "PPtr<":
-                                        pptr = self._parse_obj(level+2)
+                                        pptr = self._parse_obj(level + 2)
                                         global_index = self._external_references[pptr["m_FileID"][1]]
                                         vector.append(
                                             {
@@ -254,15 +256,16 @@ class Parser(object):
                                                         "GlobalFileIndex": global_index,
                                                         "File": self._file_index.files[global_index],
                                                         "ID": pptr["m_PathID"].value,
-                                                        "Type": item_field.type[5:-1], # Remove PPtr<>
+                                                        "Type": item_field.type[5:-1],  # Remove PPtr<>
                                                     })
                                             })
                                     else:
                                         # Otherwise, recursively parse the nested object.
-                                        vector.append({item_field.name: Field(item_field.type, self._parse_obj(level+2))})
+                                        vector.append(
+                                            {item_field.name: Field(item_field.type, self._parse_obj(level + 2))})
                             else:
                                 # Case for simple types.
-                                for i in xrange(size):
+                                for i in range(size):
                                     field = self._fields[self._index]
                                     self._index += 1
                                     vector.append(Field(field.type, self._typecast(field.value, field.type)))
@@ -271,13 +274,13 @@ class Parser(object):
                         obj[field.name] = Field("vector", [])
                 elif field.type[:5] == "PPtr<":
                     # Special case for PPtrs.
-                    pptr = self._parse_obj(level+1)
+                    pptr = self._parse_obj(level + 1)
                     global_index = self._external_references[pptr["m_FileID"][1]]
                     obj[field.name] = Field("PPtr", {
                         "GlobalFileIndex": global_index,
                         "File": self._file_index.files[global_index],
                         "ID": pptr["m_PathID"].value,
-                        "Type": field.type[5:-1], # Remove PPtr<>
+                        "Type": field.type[5:-1],  # Remove PPtr<>
                     })
                 else:
                     field_name = field.name
@@ -290,7 +293,7 @@ class Parser(object):
                         field_name = "{0}/{1}".format(field_name, i)
 
                     # Recursively parse nested object.
-                    obj[field_name] = Field(field.type, self._parse_obj(level+1))
+                    obj[field_name] = Field(field.type, self._parse_obj(level + 1))
             else:
                 # Special case for Vertex Data not having the same syntax.
                 if field.name != "<vector data>":
@@ -314,7 +317,8 @@ class Parser(object):
                 return json.loads(value)
             except:
                 return value
-        elif typename in ["int", "unsigned int", "SInt64", "UInt64", "SInt32", "UInt32", "SInt16", "UInt16", "SInt8", "UInt8"]:
+        elif typename in ["int", "unsigned int", "SInt64", "UInt64", "SInt32", "UInt32", "SInt16", "UInt16", "SInt8",
+                          "UInt8"]:
             return int(value)
         elif typename == "float" or typename == "double":
             return self.to_float(value)
@@ -398,9 +402,9 @@ class ObjectProcessor(object):
         }
         self._default_handler = DefaultHandler(self._id_generator, self._file_index)
 
-    def process_objects(self, bundle_id, objs, db, file, store_raw):
+    def process_objects(self, bundle_id, objs, db, local_file, store_raw):
         cursor = db.cursor()
-        file_id = self._file_index.get_id(file)
+        file_id = self._file_index.get_id(local_file)
 
         count = 0
         error_count = 0
@@ -419,8 +423,9 @@ class ObjectProcessor(object):
                 error_count += 1
                 print ("Ignoring duplicate object {0}!".format(object_id))
                 if error_count > 10:
-                    print ("Too many duplicate objects, aborting file {0}!".format(file))
-                    print ("Are you trying to analyze multiple variants of the same bundles? You should analyze one set of bundles at a time.")
+                    print ("Too many duplicate objects, aborting file {0}!".format(local_file))
+                    print (
+                        "Are you trying to analyze multiple variants of the same bundles? You should analyze one set of bundles at a time.")
                     break
                 continue
 
@@ -429,7 +434,8 @@ class ObjectProcessor(object):
 
             # If there's a m_GameObject PPtr field, get the id of the game object.
             game_object_pptr = obj["Content"].get("m_GameObject")
-            game_object_id = None if not game_object_pptr else self._id_generator.get_id(game_object_pptr.value["GlobalFileIndex"], game_object_pptr.value["ID"])
+            game_object_id = None if not game_object_pptr else self._id_generator.get_id(
+                game_object_pptr.value["GlobalFileIndex"], game_object_pptr.value["ID"])
 
             # Call type specific handler.
             handler = self._type_handlers.get(typename, self._default_handler)
@@ -463,8 +469,8 @@ class ObjectProcessor(object):
                 ''', (current_id, ref[0], ref[1], ref[2], ref[3]))
         db.commit()
 
-        if(args.verbose == True):
-            debug_print("{0} objects".format( count ), 4)
+        if (args.verbose == True):
+            debug_print("{0} objects".format(count), 4)
 
     def _add_type(self, cursor, class_id, typename):
         cursor.execute('''
@@ -683,7 +689,7 @@ class BaseHandler(object):
                     references.extend(r)
             elif type(obj) is list:
                 # Recursively iterate over objects in list.
-                for i in xrange(len(obj)):
+                for i in range(len(obj)):
                     v = obj[i]
                     s, r, c = self._recursive_process(v, "{0}[{1}]".format(field_path, i))
                     count += c
@@ -703,7 +709,7 @@ class BaseHandler(object):
                             self._file_index.is_built_in(file_id),
                         ))
                     count += 1
-                    size += 12 # Size of PPtr?
+                    size += 12  # Size of PPtr?
                 elif obj.type.startswith("pod_vector:"):
                     size += BaseHandler._get_size(obj)
                 elif type(obj.value) is dict or type(obj.value) is list:
@@ -741,7 +747,7 @@ class BaseHandler(object):
             "Vector4f": 16,
             "Vector3f": 12,
             "Vector2f": 8,
-            "bool": 1, # TODO: check real serialized size of bool
+            "bool": 1,  # TODO: check real serialized size of bool
             "GUID": 16,
         }
         size = size_map.get(field.type)
@@ -1044,7 +1050,8 @@ class ShaderHandler(BaseHandler):
         cursor.execute('''
             INSERT INTO shaders(id, properties, sub_shaders, passes, sub_programs, unique_programs, keywords)
                 VALUES(?,?,?,?,?,?,?)
-        ''', (current_id, properties, len(sub_shaders), pass_num, total_subprograms, len(unique_progs), ", ".join(sorted(unique_keywords))))
+        ''', (current_id, properties, len(sub_shaders), pass_num, total_subprograms, len(unique_progs),
+              ", ".join(sorted(unique_keywords))))
 
         return (name,) + self._recursive_process(obj, "")
 
@@ -1404,12 +1411,14 @@ class FileIndex(object):
 
         return index
 
+
 # if running in debug, function to trap stack when breaking 
 def debug_signal_handler(signal, frame):
     import pdb
     pdb.set_trace()
 
-def run_tool_with_timeout(tool,filepath,ret_code,time_out,level=0):
+
+def run_tool_with_timeout(tool, filepath, ret_code, time_out, level=0):
     p = Process(run_tool(tool, filepath, ret_code, level))
     p.start()
 
@@ -1423,25 +1432,28 @@ def run_tool_with_timeout(tool,filepath,ret_code,time_out,level=0):
         p.terminate()
         p.join()
 
+
 # function for spawned process to run WebExtract
 def run_tool(tool, filepath, ret_code, level=0):
     with open(os.devnull, 'wb') as devnull:
         path = os.path.join(args.tool_path, tool)
-        if(args.verbose == True):
+        if args.verbose:
             debug_print("{0} {1}".format(tool, filepath), level)
 
         p = subprocess.Popen([path, filepath], stdout=devnull, stderr=devnull)
         p.communicate()
         ret_code = p.returncode
 
+
 # print some output with an optional indent level
-def debug_print(msg,level=0):
+def debug_print(msg, level=0):
     indent = ""
-    if(args.verbose == True):
+    if args.verbose:
         indent = "-> "
         for x in range(level):
             indent = "-" + indent
     print("{0}{1}".format(indent, msg))
+
 
 if __name__ == '__main__':
     main()

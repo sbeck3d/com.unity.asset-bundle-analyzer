@@ -175,7 +175,7 @@ class Parser(object):
                 self._fields.append(field)
 
     def _print_error(self):
-        for i in xrange(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
+        for i in range(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
             print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
 
     def _parse_obj(self, level=1):
@@ -241,7 +241,7 @@ class Parser(object):
                             # No value means a nested object (Case for "data (Type)" element).
                             if not item_field.value:
                                 # Iterate over array elements.
-                                for i in xrange(size):
+                                for i in range(size):
                                     item_field = self._fields[self._index]
                                     self._index += 1
 
@@ -265,7 +265,7 @@ class Parser(object):
                                             {item_field.name: Field(item_field.type, self._parse_obj(level + 2))})
                             else:
                                 # Case for simple types.
-                                for i in xrange(size):
+                                for i in range(size):
                                     field = self._fields[self._index]
                                     self._index += 1
                                     vector.append(Field(field.type, self._typecast(field.value, field.type)))
@@ -689,7 +689,7 @@ class BaseHandler(object):
                     references.extend(r)
             elif type(obj) is list:
                 # Recursively iterate over objects in list.
-                for i in xrange(len(obj)):
+                for i in range(len(obj)):
                     v = obj[i]
                     s, r, c = self._recursive_process(v, "{0}[{1}]".format(field_path, i))
                     count += c

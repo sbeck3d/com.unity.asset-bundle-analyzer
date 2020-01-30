@@ -16,6 +16,7 @@ To install this package, follow the instructions in the [Package Manager documen
 
 The AssetBundle Analyzer runs a python script and saves a database file (.db) in the project folder.
 
+The script requires Python 2.7.17 or higher!
 ~~You need Python 2.7~~ Now compatible with Python 3.7 accessible from path to run this program. You will also need a tool such as [DB Browser for SQLite](https://sqlitebrowser.org/) to open the database.
 
 ## Optional arguments 

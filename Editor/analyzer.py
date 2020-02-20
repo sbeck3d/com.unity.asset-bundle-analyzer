@@ -120,7 +120,7 @@ class Parser(object):
         self._external_references = {0: self._file_index.get_id(os.path.basename(filepath[:-4]))}
         # File id 0 is always the current file (we store only the base file name without .txt extension).
 
-        with open(filepath) as f:
+        with open(filepath, encoding="utf8") as f:
             line = f.readline()
             # Parse external references.
             if line == "External References\n":
@@ -139,7 +139,7 @@ class Parser(object):
                         global_index = self._file_index.get_id(local_file)
                         self._external_references[local_index] = global_index
 
-        with open(filepath) as f:
+        with open(filepath, encoding="utf8") as f:
             data = f.read()
 
         # Parse the whole file, extract all objects.
@@ -176,7 +176,11 @@ class Parser(object):
 
     def _print_error(self):
         for i in range(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
-            print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
+            if (self._index == i):
+                print("*")
+            else:
+                print("")
+            #print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
 
     def _parse_obj(self, level=1):
         obj = {}
@@ -410,7 +414,7 @@ class ObjectProcessor(object):
         error_count = 0
 
         # Iterate on objects.
-        for object_id, obj in objs.iteritems():
+        for object_id, obj in objs.items():
             count += 1
 
             # Get unique id for this object.
@@ -523,7 +527,7 @@ class ObjectProcessor(object):
         cursor.execute('''
             CREATE VIEW object_view AS
             SELECT objects.id, objects.object_id, asset_bundles.name AS bundle, files.name AS file, objects.class_id, types.name AS type, objects.name, objects.game_object, objects.size,
-            CASE 
+            CASE
                 WHEN size < 1024 THEN printf("%!5.1f B", size * 1.0)
                 WHEN size >=  1024 AND size < (1024 * 1024) THEN printf("%!5.1f KB", size / 1024.0)
                 WHEN size >= (1024 * 1024)  AND size < (1024 * 1024 * 1024) THEN printf("%!5.1f MB", size / 1024.0 / 1024)
@@ -639,7 +643,7 @@ class ObjectProcessor(object):
             WHERE m.type = "Material" AND s.type = "Shader"
         ''')
 
-        for h in self._type_handlers.itervalues():
+        for h in self._type_handlers.values():
             h.init_database(cursor)
 
         db.commit()
@@ -681,7 +685,7 @@ class BaseHandler(object):
                 if field_path:
                     # Separate fields with ":""
                     field_path += ":"
-                for k, v in obj.iteritems():
+                for k, v in obj.items():
                     # Recursively process object.
                     s, r, c = self._recursive_process(v, field_path + k)
                     count += 1 + c
@@ -755,7 +759,7 @@ class BaseHandler(object):
             if field.type == "string":
                 size = len(field.value)
             elif field.type.startswith("pod_vector:"):
-                size = len(field.value) * size_map[field.type[11:]]
+                size = len(list(field.value)) * len(list(field.type[11:]))
                 return size
             else:
                 print("Warning: unhandled type {0}!".format(field.type))
@@ -993,7 +997,7 @@ class ShaderHandler(BaseHandler):
             pass_num = 0
             for p in passes:
                 names = {}
-                for k, n in p["data"].value["m_NameIndices"].value.iteritems():
+                for k, n in p["data"].value["m_NameIndices"].value.items():
                     if ("data" in k):
                         names[n.value["second"].value] = n.value["first"].value
 
@@ -1300,7 +1304,7 @@ class AssetBundleHandler(BaseHandler):
     def process(self, current_id, obj, cursor, bundle_id):
         name = obj["m_Name"].value
 
-        for key, asset in obj["m_Container"].value.iteritems():
+        for key, asset in obj["m_Container"].value.items():
             if "data" in key:
                 pptr = asset.value["second"].value["asset"]
 
@@ -1310,14 +1314,17 @@ class AssetBundleHandler(BaseHandler):
 
                 obj_id = self._id_generator.get_id(pptr.value["GlobalFileIndex"], pptr.value["ID"])
 
-                cursor.execute('''
-                    INSERT INTO assets(bundle_id, name, obj_id)
-                        VALUES(?,?,?)
-                ''', (
-                    bundle_id,
-                    asset.value["first"].value,
-                    obj_id)
-                               )
+                try:
+                    cursor.execute('''
+                        INSERT INTO assets(bundle_id, name, obj_id)
+                            VALUES(?,?,?)
+                    ''', (
+                        bundle_id,
+                        asset.value["first"].value,
+                        obj_id)
+                                   )
+                except:
+                    print("Could not parse bundle, duplicate id.")
 
         return (name,) + self._recursive_process(obj, "")
 
@@ -1412,7 +1419,7 @@ class FileIndex(object):
         return index
 
 
-# if running in debug, function to trap stack when breaking 
+# if running in debug, function to trap stack when breaking
 def debug_signal_handler(signal, frame):
     import pdb
     pdb.set_trace()
@@ -1426,7 +1433,7 @@ def run_tool_with_timeout(tool, filepath, ret_code, time_out, level=0):
     p.join(time_out)
 
     if p.is_alive():
-        print "{0} timeout".format(tool)
+        print(tool + timeout)
 
         # Terminate
         p.terminate()
@@ -1438,7 +1445,7 @@ def run_tool(tool, filepath, ret_code, level=0):
     with open(os.devnull, 'wb') as devnull:
         path = os.path.join(args.tool_path, tool)
         if args.verbose:
-            debug_print("{0} {1}".format(tool, filepath), level)
+            debug_print(tool + filepath, level)
 
         p = subprocess.Popen([path, filepath], stdout=devnull, stderr=devnull)
         p.communicate()
@@ -1452,7 +1459,7 @@ def debug_print(msg, level=0):
         indent = "-> "
         for x in range(level):
             indent = "-" + indent
-    print("{0}{1}".format(indent, msg))
+    print(indent + msg)
 
 
 if __name__ == '__main__':

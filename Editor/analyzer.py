@@ -177,9 +177,9 @@ class Parser(object):
     def _print_error(self):
         for i in range(max(0, self._index - 20), min(self._index + 20, len(self._fields))):
             if (self._index == i):
-                print("*")
+                print("Print error *")
             else:
-                print("")
+                print("Print error")
             #print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
 
     def _parse_obj(self, level=1):
@@ -348,7 +348,7 @@ class Parser(object):
                 Field("float", self.to_float(match.group(2))),
             ]
         elif typename == "bool":
-            return int(value) == 1
+            return int(float(value)) == 1
         elif typename == "ColorRGBA":
             match = re.match(r"\((\S+) (\S+) (\S+) (\S+)\)", value)
             return [
@@ -474,7 +474,7 @@ class ObjectProcessor(object):
         db.commit()
 
         if (args.verbose == True):
-            debug_print("{0} objects".format(count), 4)
+            debug_print(count + " objects")
 
     def _add_type(self, cursor, class_id, typename):
         cursor.execute('''
@@ -1433,7 +1433,7 @@ def run_tool_with_timeout(tool, filepath, ret_code, time_out, level=0):
     p.join(time_out)
 
     if p.is_alive():
-        print(tool + timeout)
+        print("run_tool_with_timeout: " + tool + timeout)
 
         # Terminate
         p.terminate()

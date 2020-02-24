@@ -1,7 +1,7 @@
 # Asset Bundle Analyzer Package
 ## com.unity.support.asset-bundle-analyzer
 Version 0.1.0 [last updated 2020-01-02]
- 
+
 This tool extracts useful information from Unity asset bundles and stores the information in an SQLite database.
 
 ## Getting started
@@ -19,7 +19,9 @@ The AssetBundle Analyzer runs a python script and saves a database file (.db) in
 The script requires Python 2.7.17 or higher!
 ~~You need Python 2.7~~ Now compatible with Python 3.7 accessible from path to run this program. You will also need a tool such as [DB Browser for SQLite](https://sqlitebrowser.org/) to open the database.
 
-## Optional arguments 
+[Windows] Requires git for package installation in Unity!
+
+## Optional arguments
 __[Currently not supported in 0.1.0 - coming soon]__
 
 * -p PATTERN, --pattern PATTERN: wildcard pattern used to recursively find asset bundles in the specified folder (default: *)
@@ -68,4 +70,3 @@ Access via Window>Analysis>AssetBundle Analyzer
 
 In Editor UI:  
 ![alt text](AssetBundleAnalyzerUI.png "Asset bundle analyzer menu")
-

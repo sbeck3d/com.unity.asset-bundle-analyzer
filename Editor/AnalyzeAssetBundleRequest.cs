@@ -1,9 +1,6 @@
-using System;
-using System.Runtime;
 using System.Diagnostics;
 using System.IO;
-using System.Text;
-using UnityEngine;
+
 
 namespace UnityEditor.AssetBundleAnalyzer
 {
@@ -53,19 +50,21 @@ namespace UnityEditor.AssetBundleAnalyzer
 
         private void StartProcess(ProcessStartInfo start)
         {
-            using (var process = Process.Start(start))
-            {
-                UnityEngine.Debug.Log("AssetBundle Analyzer running. Process could take a minute!");
-                var output = process.StandardOutput.ReadToEnd();
-                if (output != "")
-                {
-                    UnityEngine.Debug.Log(output);
-                }
-                else
-                {
-                    UnityEngine.Debug.Log("Folder scanned, no bundles found.");
-                }
-            }
+            var process = new Process {StartInfo = start};
+            //* Set your output and error (asynchronous) handlers
+            process.OutputDataReceived += OutputHandler;
+            process.ErrorDataReceived += OutputHandler;
+            //* Start process and handlers
+            process.Start();
+            process.BeginOutputReadLine();
+            process.BeginErrorReadLine();
+            process.WaitForExit();
+        }
+        
+        static void OutputHandler(object sendingProcess, DataReceivedEventArgs outLine) 
+        {
+            if (outLine.Data != "") // print if the line is not empty
+                UnityEngine.Debug.Log(outLine.Data);
         }
     }
 }

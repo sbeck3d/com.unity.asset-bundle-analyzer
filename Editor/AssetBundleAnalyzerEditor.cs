@@ -69,8 +69,7 @@ namespace UnityEditor.AssetBundleAnalyzer
             if (GUILayout.Button("Analyze AssetBundle(s)"))
             {
                 m_analyzeAssetBundleRequest.CreateDatabase(m_toolsFolderPath, m_assetBundlesPath, m_outputName, m_usePattern, m_pattern, m_keepTemp, m_storeRaw, m_debug, m_verbose);
-                EditorUtility.DisplayDialog("AssetBundle analyzer",
-                    "Database is saved in Project Folder.", "Close");
+                EditorUtility.DisplayDialog("AssetBundle analyzer", "Database is saved in Project Folder.", "Close");
             }
         }
     }

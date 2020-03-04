@@ -763,7 +763,8 @@ class BaseHandler(object):
                 size = len(list(field.value)) * len(list(field.type[11:]))
                 return size
             else:
-                print("Warning: unhandled type {0}!".format(field.type))
+                if args.verbose:
+                    debug_print("Warning: unhandled type {0}!".format(field.type), 0)
                 return 0
         return size
 

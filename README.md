@@ -1,6 +1,6 @@
 # Asset Bundle Analyzer Package
 ## com.unity.support.asset-bundle-analyzer
-Version 0.1.0 [last updated 2020-01-02]
+Version 0.1.0 [last updated 2020-03-04]
 
 This tool extracts useful information from Unity asset bundles and stores the information in an SQLite database.
 

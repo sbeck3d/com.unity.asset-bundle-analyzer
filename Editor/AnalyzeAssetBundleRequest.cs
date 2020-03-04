@@ -1,16 +1,39 @@
+using System;
 using System.Runtime;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace UnityEditor.AssetBundleAnalyzer
 {
     public class AnalyzeAssetBundleRequest
     {
-        public void CreateDatabase(string toolsPath, string assetPath)
+        public void CreateDatabase(string toolsPath, string assetPath, string outputName, bool usePattern, string pattern, bool keepTemp, bool storeRaw, bool debug, bool verbose)
         {
-            var arguments = toolsPath + " " + assetPath;
-            RunPythonScript(arguments);
+          var arguments = "";
+          if (usePattern)
+          {
+             arguments += (" -p "+ pattern + " ");
+          }
+          if (keepTemp)
+          {
+             arguments += " -k ";
+          }
+          if (storeRaw)
+          {
+             arguments += " -r ";
+          }
+          if (debug)
+          {
+             arguments += " -d ";
+          }
+          if (verbose)
+          {
+             arguments += " -v ";
+          }
+          arguments = arguments + " -o "+ outputName + " \""+ toolsPath + "\" \"" + assetPath + "\"";
+          RunPythonScript(arguments);
         }
 
         private void RunPythonScript(string args)

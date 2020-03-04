@@ -120,7 +120,7 @@ class Parser(object):
         self._external_references = {0: self._file_index.get_id(os.path.basename(filepath[:-4]))}
         # File id 0 is always the current file (we store only the base file name without .txt extension).
 
-        with open(filepath, encoding="utf8") as f:
+        with open(filepath) as f:
             line = f.readline()
             # Parse external references.
             if line == "External References\n":
@@ -139,7 +139,7 @@ class Parser(object):
                         global_index = self._file_index.get_id(local_file)
                         self._external_references[local_index] = global_index
 
-        with open(filepath, encoding="utf8") as f:
+        with open(filepath) as f:
             data = f.read()
 
         # Parse the whole file, extract all objects.
@@ -180,7 +180,7 @@ class Parser(object):
                 print("Print error *")
             else:
                 print("Print error")
-            #print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
+            # print("{0} {1}".format("*" if self._index == i else " ", self._fields[i]))
 
     def _parse_obj(self, level=1):
         obj = {}
@@ -224,7 +224,8 @@ class Parser(object):
                             while True:
                                 self._index += 1
                                 # Break if we reached the end of <vector data> fields.
-                                if self._index == len(self._fields) or self._fields[self._index].name != "<vector data>":
+                                if self._index == len(self._fields) or self._fields[
+                                    self._index].name != "<vector data>":
                                     break
                                 vector.extend(self._fields[self._index].value.split(" "))
 
@@ -474,7 +475,7 @@ class ObjectProcessor(object):
         db.commit()
 
         if (args.verbose == True):
-            debug_print(count + " objects")
+            debug_print(chr(count) + " objects")
 
     def _add_type(self, cursor, class_id, typename):
         cursor.execute('''
@@ -1433,7 +1434,7 @@ def run_tool_with_timeout(tool, filepath, ret_code, time_out, level=0):
     p.join(time_out)
 
     if p.is_alive():
-        print("run_tool_with_timeout: " + tool + timeout)
+        print("run_tool_with_timeout: " + tool + time_out)
 
         # Terminate
         p.terminate()

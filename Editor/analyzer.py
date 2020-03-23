@@ -75,10 +75,16 @@ def main():
                                 debug_print("Parsing " + f2, 3)
                                 p = Parser(file_index)
                                 objs = p.parse(datafile + ".txt")
-                                processor.process_objects(bundle_id, objs, db, f2, args.store_raw)
+                                try:
+                                    processor.process_objects(bundle_id, objs, db, f2, args.store_raw)
+                                except Exception as e:
+                                    print("Error in "+ str(bundle_id) + str(e))
 
                         if not args.keep_temp:
-                            shutil.rmtree(datapath)
+                            try:
+                                shutil.rmtree(datapath)
+                            except Exception as e:
+                                print("Error in " + datapath + str(e))
     else:
         print ("Path is not a directory!")
 
@@ -140,24 +146,27 @@ class Parser(object):
                         self._external_references[local_index] = global_index
 
         with open(filepath) as f:
-            data = f.read()
+            try:
+                data = f.read()
+            except Exception as e:
+                print("Error in filepath "+ str(f) + str(e))
 
         # Parse the whole file, extract all objects.
         regex = re.compile(r"ID: (-?[a-f0-9]+) \(ClassID: (\d+)\) (\w+)([\s\S]*?(?=(\n{2,}ID:|$)))")
-        matches = regex.findall(data)
-
         objects = {}
-
-        # Parse individual objects.
-        for match in matches:
-            try:
-                self._parse_lines(match[3])
-                objects[int(match[0])] = {"ClassID": int(match[1]), "Type": match[2], "Content": self._parse_obj()}
-            except Exception as e:
-                print("Error in " + match[0] + str(e))
-                self._print_error()
-                raise
-
+        try:
+            matches = regex.findall(data)
+            # Parse individual objects.
+            for match in matches:
+                try:
+                    self._parse_lines(match[3])
+                    objects[int(match[0])] = {"ClassID": int(match[1]), "Type": match[2], "Content": self._parse_obj()}
+                except Exception as e:
+                    print("Error in " + match[0] + str(e))
+                    self._print_error()
+                    raise
+        except Exception as e:
+            print("Skipping data due to error in filepath: " + str(e))
         return objects
 
     def _parse_lines(self, data):

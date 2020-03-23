@@ -127,23 +127,26 @@ class Parser(object):
         # File id 0 is always the current file (we store only the base file name without .txt extension).
 
         with open(filepath) as f:
-            line = f.readline()
-            # Parse external references.
-            if line == "External References\n":
-                while True:
-                    line = f.readline()
-                    if not line or line == '\n':
-                        break
+            try:
+                line = f.readline()
+                # Parse external references.
+                if line == "External References\n":
+                    while True:
+                        line = f.readline()
+                        if not line or line == '\n':
+                            break
 
-                    m = re.match(r"path\((\d+)\): \".*/(.+?)\"", line)
-                    if not m:
-                        raise Exception("Error in references")
-                    else:
-                        # Get the local file id <> global file id pair.
-                        local_file = m.group(2)
-                        local_index = int(m.group(1))
-                        global_index = self._file_index.get_id(local_file)
-                        self._external_references[local_index] = global_index
+                        m = re.match(r"path\((\d+)\): \".*/(.+?)\"", line)
+                        if not m:
+                            raise Exception("Error in references")
+                        else:
+                            # Get the local file id <> global file id pair.
+                            local_file = m.group(2)
+                            local_index = int(m.group(1))
+                            global_index = self._file_index.get_id(local_file)
+                            self._external_references[local_index] = global_index
+            except Exception as e:
+                print("Error in filepath "+ str(f) + str(e))
 
         with open(filepath) as f:
             try:
@@ -1448,7 +1451,10 @@ def run_tool_with_timeout(tool, filepath, ret_code, time_out, level=0):
 
         # Terminate
         p.terminate()
-        p.join()
+        p.join(time_out)
+    else:
+        p.terminate()
+        return;
 
 
 # function for spawned process to run WebExtract

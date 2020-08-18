@@ -6,6 +6,7 @@ venv*
 /*/.vs/
 /*/.vscode/*
 /*/.idea/*
+/*/*/.idea/*
 
 *.xml
 .yamato

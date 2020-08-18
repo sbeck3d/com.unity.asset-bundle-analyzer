@@ -1,3 +1,11 @@
 venv*
-.idea/*
+
+# Visual Studio cache directory
+.vs/
+.vscode/*
+/*/.vs/
+/*/.vscode/*
+/*/.idea/*
+
 *.xml
+.yamato

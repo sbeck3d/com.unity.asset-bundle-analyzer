@@ -57,7 +57,7 @@ namespace UnityEditor.AssetBundleAnalyzer
             m_verbose = EditorGUILayout.Toggle("Run in verbose mode", m_verbose);
 
             m_storeRaw = EditorGUILayout.Toggle("Store Raw Files", m_storeRaw);
-            if ( m_usePattern = EditorGUILayout.BeginToggleGroup("Use Pattern", m_usePattern));
+            if ( m_usePattern = EditorGUILayout.BeginToggleGroup("Use Pattern", m_usePattern))
             {
                 m_pattern = EditorGUILayout.TextField("Selected pattern", m_pattern);
             }
